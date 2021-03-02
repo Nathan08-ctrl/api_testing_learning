@@ -1,0 +1,483 @@
+{
+	"info": {
+		"_postman_id": "efd66b30-8972-4442-ac94-e18b54a78c3a",
+		"name": "API Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Photo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var id = Math.floor((Math.random()*4999)+1);\r",
+							"pm.environment.set(\"photoId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"var Response = JSON.parse(responseBody);\r",
+							"var AlbumNumber = Math.ceil((pm.environment.get(\"photoId\")/50));\r",
+							"\r",
+							"pm.test(\"AlbumId is the expected value which is : \" + Response.albumId, function () { \r",
+							"pm.expect(Response.albumId).is.to.equal(AlbumNumber);  \r",
+							"});\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"PhotoId is the expected value which is : \" + Response.id, function () {\r",
+							"    pm.expect(Response.id).is.to.equal(parseInt(pm.environment.get(\"photoId\")));\r",
+							"\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 1000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/photos/{{photoId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"photos",
+						"{{photoId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Comments for a Post",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var id = Math.floor((Math.random()*99)+1);\r",
+							"pm.environment.set(\"postId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var Response = JSON.parse(responseBody);\r",
+							"var high_commentId = (parseInt(pm.environment.get(\"postId\")))*5;\r",
+							"var low_commentId = high_commentId - 4;\r",
+							"var i = 0;\r",
+							"\r",
+							"do {\r",
+							"    var commentId = ((Response[i].id));\r",
+							"    pm.test(\"Comment Id \" + Response[i].id + \" is contained in the response body and is within the expected range\", function () {\r",
+							"        pm.expect(low_commentId <= Response[i].id && Response[i].id <= high_commentId).is.to.equal(true);\r",
+							"    });\r",
+							"    i++;\r",
+							"}\r",
+							"while (i < 5 );\r",
+							"\r",
+							"pm.test(\"Comment Id \" + low_commentId + \" is the first commentId in the response body\", function () {\r",
+							"        pm.expect(low_commentId).is.to.equal(Response[0].id);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Comment Id \" + high_commentId + \" is the last commentId in the response body\", function () {\r",
+							"        pm.expect(high_commentId).is.to.equal(Response[4].id);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/comments?postId={{postId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"comments"
+					],
+					"query": [
+						{
+							"key": "postId",
+							"value": "{{postId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Posts",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var Response = JSON.parse(responseBody);\r",
+							"var x = (Response.length) + 1;\r",
+							"var i;\r",
+							"for (i = 1; i < x; i++) {\r",
+							"  var post = i;\r",
+							"  var user = Math.ceil(i/10);\r",
+							"\r",
+							"    pm.test(\"Post Id \" + post + \" was the expected value\" , function () {\r",
+							"        pm.expect(Response[i - 1].id).to.equal(post);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"User Id \" + user + \" was the expected value\" , function () {\r",
+							"        pm.expect(Response[i - 1].userId).to.equal(user);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Post \" + i + \" title is not empty\" , function () {\r",
+							"        pm.expect(Response[i - 1].title.length > 0).to.equal(true);\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Post \" + i + \" body is not empty\" , function () {\r",
+							"        pm.expect(Response[i - 1].body.length > 0).to.equal(true);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get A Post",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var id = Math.floor((Math.random()*99)+1);\r",
+							"pm.environment.set(\"postId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var Response = JSON.parse(responseBody);\r",
+							"var post = pm.environment.get(\"postId\");\r",
+							"var user = Math.ceil(post/10);\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post Id \" + post + \" is the expected value\", function () {\r",
+							"    pm.expect(Response.id).to.equal(post);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User Id \" + user + \" is the expected value\", function () {\r",
+							"    pm.expect(Response.userId).to.equal(user);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Successfully Create a Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Your test name\", function () {\r",
+							"   pm.expect(jsonData.id).to.eql(101);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post title to equal Hello World\", function () {\r",
+							"    pm.expect(jsonData.title).to.equal(\"Hello World\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User that created post was UserId 1\", function () {\r",
+							"    pm.expect(jsonData.userId).to.equal(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post creation was successful\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Hello World\",\r\n    \"body\": \"Hello World\",\r\n    \"userId\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sucessfully Update a Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Your test name\", function () {\r",
+							"   pm.expect(jsonData.id).to.eql(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post title to equal Hello World\", function () {\r",
+							"    pm.expect(jsonData.title).to.equal(\"Hello World\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post body to equal Hello World\", function () {\r",
+							"    pm.expect(jsonData.body).to.equal(\"Hello World\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User that updated post was UserId 1\", function () {\r",
+							"    pm.expect(jsonData.userId).to.equal(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post update was successful\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Hello World\",\r\n    \"body\": \"Hello World\",\r\n    \"userId\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/1",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Post Title",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"var user = Math.ceil((pm.environment.get(\"postId\"))/10);\r",
+							"\r",
+							"pm.test(\"Post title is now equal to Hello World!\", function () {\r",
+							"    pm.expect(jsonData.title).to.equal(\"Hello World!\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"User that updated post was UserId 1\", function () {\r",
+							"    pm.expect(jsonData.userId).to.equal(user);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Post update was successful\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var id = Math.floor((Math.random()*99)+1);\r",
+							"pm.environment.set(\"postId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\" : \"Hello World!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Successfully Delete Post",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body is empty\", function () {\r",
+							"    pm.response.to.have.body(\"{}\");\r",
+							"});\r",
+							"\r",
+							"console.log(pm.environment.get(\"postId\"));\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var id = Math.floor((Math.random()*99)+1);\r",
+							"pm.environment.set(\"postId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://jsonplaceholder.typicode.com/posts/{{postId}}",
+					"protocol": "https",
+					"host": [
+						"jsonplaceholder",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
